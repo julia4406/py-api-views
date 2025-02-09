@@ -64,7 +64,17 @@ class CinemaHallSerializer(serializers.Serializer):
         return instance
 
 
-class GenreSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Genre
-        fields = ["id", "name"]
+class GenreSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField(
+        max_length=50,
+        validators=[UniqueValidator(queryset=Genre.objects.all())]
+    )
+
+    def create(self, validated_data):
+        return Genre.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get("name", instance.name)
+        instance.save()
+        return instance
